@@ -1,11 +1,26 @@
 import autograder as _autograder
-import blessings as _blessings
+try:
+    import blessings as _blessings
+except ImportError:
+    # fake it well enough for our use cases
+    class _blessings:
+        class Terminal:
+            def green(self, s):
+                return s
+            def red(self, s):
+                return s
+            def italic(self, s):
+                return s
+            def underlins(self, s):
+                return s
 import sys as _sys
 
 class TerminalReporter(_autograder.Reporter):
     requirements = {}
 
     def __init__(self):
+        if _blessings is None:
+            self.terminal
         self.terminal = _blessings.Terminal()
     def on_part_completion(self, name, data):
         t = self.terminal
