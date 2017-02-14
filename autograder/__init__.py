@@ -3,7 +3,6 @@ import abc as _abc
 import concurrent.futures as _futures
 import collections as _collections
 import argparse as _argparse
-import importlib as _importlib
 import json as _json
 import sys as _sys
 
@@ -110,23 +109,25 @@ def setup_args(parser, backends):
 
 def main():
     first_parser = _argparse.ArgumentParser()
-    first_parser.add_argument('gradefile', help='python file (without the .py extension) defining backends, reporters and actions to take')
+    first_parser.add_argument('gradefile', type=_argparse.FileType('r'), help='python file defining backends, reporters and actions to take')
     first_parser.add_argument('--run-from', nargs='?', type=_argparse.FileType('r'), default=None, help='report the contents of this result file')
     first_parser.add_argument('--output', nargs='?', type=_argparse.FileType('w'), help='filename to output json', default=_sys.stdout)
     args, rest = first_parser.parse_known_args()
-    definitions = _importlib.import_module(args.gradefile)
+    compiled_definitions = compile(args.gradefile.read(), 'input', 'exec')
+    definitions = {}
+    exec(compiled_definitions, definitions)
     output_file = args.output
     input_file = args.run_from
     parser = _argparse.ArgumentParser()
     if input_file is None:
-        setup_args(parser, definitions.backends)
-        setup_args(parser, definitions.reporters)
+        setup_args(parser, definitions['backends'])
+        setup_args(parser, definitions['reporters'])
     args = parser.parse_args(rest)
 
     session = Session(
-        definitions.backends if input_file is None else [],
-        definitions.reporters,
-        definitions.actions,
+        definitions['backends'] if input_file is None else [],
+        definitions['reporters'],
+        definitions['actions'],
         backend_setup=args.__dict__)
 
     if input_file is not None:
