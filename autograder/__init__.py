@@ -3,6 +3,7 @@ import abc as _abc
 import concurrent.futures as _futures
 import collections as _collections
 import argparse as _argparse
+import multiprocessing as _multiprocessing
 import json as _json
 import sys as _sys
 
@@ -74,7 +75,7 @@ class Session:
             data = {}
             for backend in self.backends:
                 backend.prepare_global(data, global_dir)
-            with _futures.ThreadPoolExecutor() as executor:
+            with _futures.ThreadPoolExecutor(max_workers=_multiprocessing.cpu_count()*4) as executor:
                 data = {}
                 procs = {executor.submit(self.run_individual, id): id for id in self.get_ids()}
                 for proc in _futures.as_completed(procs):
