@@ -154,7 +154,7 @@ def setup_args(parser, backends):
     for backend in backends:
         reqs.update(backend.requirements)
     for name, h in reqs.items():
-        parser.add_argument(name, **h)
+        parser.add_argument('--'+name, **h)
 
 def main():
     first_parser = _argparse.ArgumentParser()
