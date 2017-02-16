@@ -116,13 +116,16 @@ class Session:
     def run_individual(self, id, global_data):
         data = _collections.OrderedDict()
         with _tempfile.TemporaryDirectory() as work_dir:
-            for backend in self.backends:
-                backend.prepare(id, data, work_dir)
-            seq = ActionSequence(self.actions, self.reporters)
-            success = seq.perform(data, work_dir)
-            data['success'] = success
+            try:
+                for backend in self.backends:
+                    backend.prepare(id, data, work_dir)
+                seq = ActionSequence(self.actions, self.reporters)
+                success = seq.perform(data, work_dir)
+                data['success'] = success
+            except Exception as ex:
+                data['success'] = False
             for reporter in self.reporters:
-                reporter.on_individual_completion(id, success, data, global_data)
+                reporter.on_individual_completion(id, data['success'], data, global_data)
         return data
 
     def run(self):
