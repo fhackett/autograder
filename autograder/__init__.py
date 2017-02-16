@@ -33,6 +33,51 @@ class Reporter(metaclass=_abc.ABCMeta):
     def on_completion(self, data):
         pass
 
+try:
+    import blessings as _blessings
+except ImportError:
+    # fake it well enough for our use cases
+    class _blessings:
+        class Terminal:
+            def green(self, s):
+                return s
+            def red(self, s):
+                return s
+            def italic(self, s):
+                return s
+            def underlins(self, s):
+                return s
+import sys as _sys
+
+class _TerminalReporter(Reporter):
+    requirements = {}
+
+    def __init__(self):
+        if _blessings is None:
+            self.terminal
+        self.terminal = _blessings.Terminal()
+    def on_part_completion(self, name, data):
+        t = self.terminal
+        if data['success']:
+            _sys.stdout.write(t.green('[SUCCESS] '))
+        else:
+            _sys.stdout.write(t.red('[FAILURE] '))
+        _sys.stdout.write(name+': ')
+        _sys.stdout.write(t.italic(data['operation']))
+        _sys.stdout.write('\n')
+        _sys.stdout.write(data['output'])
+        _sys.stdout.write('\n')
+    def on_individual_completion(self, id, success, data, global_data):
+        t = self.terminal
+        if success:
+            c = lambda s: t.green(t.underline(s))
+        else:
+            c = lambda s: t.red(t.underline(s))
+        _sys.stdout.write(c('Finished {}: {}\n'.format(
+            id,
+            'success' if success else 'failure')))
+
+
 class ActionSequence(Action):
     def __init__(self, actions, reporters=[]):
         self.actions = actions
@@ -116,21 +161,24 @@ def main():
     first_parser.add_argument('gradefile', type=_argparse.FileType('r'), help='python file defining backends, reporters and actions to take')
     first_parser.add_argument('--run-from', nargs='?', type=_argparse.FileType('r'), default=None, help='report the contents of this result file')
     first_parser.add_argument('--output', nargs='?', type=_argparse.FileType('w'), help='filename to output json', default=_sys.stdout)
+    first_parser.add_argument('--only-terminal', action='store_true', help='disables all reporters, displaying output on the terminal only')
     args, rest = first_parser.parse_known_args()
     compiled_definitions = compile(args.gradefile.read(), 'input', 'exec')
     definitions = {}
     exec(compiled_definitions, definitions)
     output_file = args.output
     input_file = args.run_from
+    only_terminal = args.only_terminal
     parser = _argparse.ArgumentParser()
     if input_file is None:
         setup_args(parser, definitions['backends'])
+    if not only_terminal:
         setup_args(parser, definitions['reporters'])
     args = parser.parse_args(rest)
 
     session = Session(
         definitions['backends'] if input_file is None else [],
-        definitions['reporters'],
+        definitions['reporters'] if not only_terminal else [_TerminalReporter()],
         definitions['actions'],
         backend_setup=args.__dict__)
 

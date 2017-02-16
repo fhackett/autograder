@@ -94,21 +94,22 @@ class ReadJSON(_autograder.Action):
 
 
 class CalculateGrade(_autograder.Action):
-    def __init__(self, fn):
+    def __init__(self, name, fn):
+        self.name = name
         self.fn = fn
     def perform(self, data, work_dir):
         results = {
             'success': False,
-            'operation': 'calculate grade',
+            'operation': 'calculate grade {}'.format(self.name),
         }
         try:
             o = self.fn(data)
-            data['grade'] = o
+            data.setdefault('grades', {})[self.name] = o
             results['success'] = True
             results['output'] = str(o)
-            data['calculate_grade'] = results
+            data['calculate_grade_{}'.format(self.name)] = results
             return True
         except Exception as ex:
             results['output'] = repr(ex)
-            data['calculate_grade'] = results
+            data['calculate_grade_{}'.format(self.name)] = results
             return False
