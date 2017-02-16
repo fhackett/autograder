@@ -45,7 +45,7 @@ except ImportError:
                 return s
             def italic(self, s):
                 return s
-            def underlins(self, s):
+            def underline(self, s):
                 return s
 import sys as _sys
 
@@ -56,6 +56,7 @@ class _TerminalReporter(Reporter):
         if _blessings is None:
             self.terminal
         self.terminal = _blessings.Terminal()
+        self.failed_ids = []
     def on_part_completion(self, name, data):
         t = self.terminal
         if data['success']:
@@ -72,10 +73,15 @@ class _TerminalReporter(Reporter):
         if success:
             c = lambda s: t.green(t.underline(s))
         else:
+            self.failed_ids.append(id)
             c = lambda s: t.red(t.underline(s))
         _sys.stdout.write(c('Finished {}: {}\n'.format(
             id,
             'success' if success else 'failure')))
+    def on_completion(self, data):
+        _sys.stdout.write('Failed IDs:')
+        for id in self.failed_ids:
+            _sys.stdout.write('- '+id+'\n')
 
 
 class ActionSequence(Action):
