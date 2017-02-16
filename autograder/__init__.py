@@ -24,9 +24,11 @@ class Action(metaclass=_abc.ABCMeta):
         pass
 
 class Reporter(metaclass=_abc.ABCMeta):
+    def setup(self, **data):
+        pass
     def on_part_completion(self, name, data):
         pass
-    def on_individual_completion(self, id, success, data):
+    def on_individual_completion(self, id, success, data, global_data):
         pass
     def on_completion(self, data):
         pass
@@ -51,6 +53,8 @@ class Session:
         self.reporters = reporters
         for backend in self.backends:
             backend.setup(**backend_setup)
+        for reporter in self.reporters:
+            reporter.setup(**backend_setup)
 
     def get_ids(self):
         ids = set()
@@ -58,7 +62,7 @@ class Session:
             ids |= backend.get_ids()
         return ids
 
-    def run_individual(self, id):
+    def run_individual(self, id, global_data):
         data = _collections.OrderedDict()
         with _tempfile.TemporaryDirectory() as work_dir:
             for backend in self.backends:
@@ -67,7 +71,7 @@ class Session:
             success = seq.perform(data, work_dir)
             data['success'] = success
             for reporter in self.reporters:
-                reporter.on_individual_completion(id, success, data)
+                reporter.on_individual_completion(id, success, data, global_data)
         return data
 
     def run(self):
@@ -76,8 +80,7 @@ class Session:
             for backend in self.backends:
                 backend.prepare_global(data, global_dir)
             with _futures.ThreadPoolExecutor(max_workers=_multiprocessing.cpu_count()*4) as executor:
-                data = {}
-                procs = {executor.submit(self.run_individual, id): id for id in self.get_ids()}
+                procs = {executor.submit(self.run_individual, id, data): id for id in self.get_ids()}
                 for proc in _futures.as_completed(procs):
                     id = procs[proc]
                     try:
@@ -97,7 +100,7 @@ class Session:
                     for reporter in self.reporters:
                         reporter.on_part_completion(name, d)
             for reporter in self.reporters:
-                reporter.on_individual_completion(id, data['success'], data)
+                reporter.on_individual_completion(id, data['success'], data, results)
         for reporter in self.reporters:
             reporter.on_completion(results)
 
@@ -106,7 +109,7 @@ def setup_args(parser, backends):
     for backend in backends:
         reqs.update(backend.requirements)
     for name, h in reqs.items():
-        parser.add_argument(name, help=h)
+        parser.add_argument(name, **h)
 
 def main():
     first_parser = _argparse.ArgumentParser()

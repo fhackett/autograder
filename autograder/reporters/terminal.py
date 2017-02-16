@@ -33,7 +33,7 @@ class TerminalReporter(_autograder.Reporter):
         _sys.stdout.write('\n')
         _sys.stdout.write(data['output'])
         _sys.stdout.write('\n')
-    def on_individual_completion(self, id, success, data):
+    def on_individual_completion(self, id, success, data, global_data):
         t = self.terminal
         if success:
             c = lambda s: t.green(t.underline(s))

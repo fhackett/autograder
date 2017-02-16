@@ -7,7 +7,9 @@ import shutil as _shutil
 class HandinBackend(_autograder.Backend):
     name = 'handin'
     requirements = {
-        'handin_directory': "This is the directory where the course's handin files go. Look in csbox and go to the right year/term.",
+        'handin_directory': {
+            "help": "This is the directory where the course's handin files go. Look in csbox and go to the right year/term.",
+        },
     }
 
     def __init__(self, submission_name):
@@ -24,7 +26,7 @@ class HandinBackend(_autograder.Backend):
         # submission_timestamp
         if is_late:
             timestamp_filename = 'DateSTAMP.LATE'
-        else:
+        elif _path.exists(_path.join(prefix, 'DateSTAMP')):
             timestamp_filename = 'DateSTAMP'
         submission_timestamp = _datetime.datetime.fromtimestamp(
             _os.stat(
