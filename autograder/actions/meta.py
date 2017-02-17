@@ -9,3 +9,4 @@ class CopyToSourceDir(_autograder.Action):
         _shutil.copy2(
             src=_path.join(work_dir, self.filename),
             dst=_path.join(data['meta']['source_dir'], self.filename))
+        return True

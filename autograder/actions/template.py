@@ -16,3 +16,4 @@ class WriteTemplate(_autograder.Action):
         result = _pystache.render(self.template, _remove_dots(data))
         with open(_path.join(work_dir, self.filename), 'w') as f:
             f.write(result)
+        return True
