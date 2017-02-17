@@ -6,6 +6,7 @@ import argparse as _argparse
 import multiprocessing as _multiprocessing
 import json as _json
 import sys as _sys
+import traceback as _traceback
 
 
 class Backend(metaclass=_abc.ABCMeta):
@@ -73,15 +74,17 @@ class _TerminalReporter(Reporter):
         if success:
             c = lambda s: t.green(t.underline(s))
         else:
-            self.failed_ids.append(id)
+            self.failed_ids.append((id, data['traceback']))
             c = lambda s: t.red(t.underline(s))
         _sys.stdout.write(c('Finished {}: {}\n'.format(
             id,
             'success' if success else 'failure')))
+        if not success:
+            _sys.stdout.write(data['traceback']+'\n')
     def on_completion(self, data):
-        _sys.stdout.write('Failed IDs:')
-        for id in self.failed_ids:
-            _sys.stdout.write('- '+id+'\n')
+        _sys.stdout.write(self.terminal.red('Failed IDs:\n'))
+        for id, trace in self.failed_ids:
+            _sys.stdout.write('- '+id+'\n'+trace+'\n')
 
 
 class ActionSequence(Action):
@@ -106,12 +109,20 @@ class Session:
             backend.setup(**backend_setup)
         for reporter in self.reporters:
             reporter.setup(**backend_setup)
+        self.reporting_failed = set()
 
     def get_ids(self):
         ids = set()
         for backend in self.backends:
             ids |= backend.get_ids()
         return ids
+
+    def _run_reporters_individual_completion(self, id, success, data, global_data):
+        try:
+            for reporter in self.reporters:
+                reporter.on_individual_completion(id, data['success'], data, global_data)
+        except Exception as ex:
+            self.reporting_failed.add((id, _traceback.format_exc()))
 
     def run_individual(self, id, global_data):
         data = _collections.OrderedDict()
@@ -124,8 +135,8 @@ class Session:
                 data['success'] = success
             except Exception as ex:
                 data['success'] = False
-            for reporter in self.reporters:
-                reporter.on_individual_completion(id, data['success'], data, global_data)
+                data['traceback'] = _traceback.format_exc()
+            self._run_reporters_individual_completion(id, data['success'], data, global_data)
         return data
 
     def run(self):
@@ -155,8 +166,7 @@ class Session:
                 if isinstance(d, dict) and 'success' in d:
                     for reporter in self.reporters:
                         reporter.on_part_completion(name, d)
-            for reporter in self.reporters:
-                reporter.on_individual_completion(id, data['success'], data, results)
+            self._run_reporters_individual_completion(id, data['success'], data, results)
         for reporter in self.reporters:
             reporter.on_completion(results)
 
@@ -199,6 +209,12 @@ def main():
     else:
         results = session.run()
         _json.dump(results, output_file, indent=2, default=repr)
+
+    # if reporting failed, note the swallowed exception:
+    if len(session.reporting_failed) != 0:
+        print('Reporting failed:')
+        for rfail, ex in sorted(session.reporting_failed):
+            print('- {}: {}'.format(rfail, ex))
 
 if __name__ == '__main__':
     main()
