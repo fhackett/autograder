@@ -4,6 +4,8 @@ import os.path as _path
 import json as _json
 import traceback as _traceback
 
+from .meta import CopyToSourceDir
+from .template import WriteTemplate
 
 def find_command(*args, path=None):
     for arg in args:

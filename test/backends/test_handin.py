@@ -23,16 +23,19 @@ def test__get_ids(backend):
 
 @pytest.mark.parametrize('id,expected_meta', [
     ('1', {
+        'submitter_id': '1',
         'is_late': False,
         'submission_timestamp': None,
         'partner_id': None,
     }),
     ('2', {
+        'submitter_id': '2',
         'is_late': True,
         'submission_timestamp': None,
         'partner_id': '4',
     }),
     ('3', {
+        'submitter_id': '3',
         'is_late': False,
         'submission_timestamp': None,
         'partner_id': '5',
@@ -41,7 +44,7 @@ def test__prepare(id, expected_meta, backend, my_tmpdir):
     data = {}
     backend.prepare(id, data, my_tmpdir)
     source_dir = os.path.join(backend.handin_directory,backend.submission_name,id)
-    assert data['files'] == {'source_dir': source_dir}
+    expected_meta['source_dir'] = source_dir
     if expected_meta['is_late']:
         stamp_name = 'DateSTAMP.LATE'
     else:

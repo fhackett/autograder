@@ -49,12 +49,11 @@ class HandinBackend(_autograder.Backend):
 
 
         data.setdefault('meta',{}).update({
+            'submitter_id': id,
             'is_late': is_late,
             'submission_timestamp': submission_timestamp,
-            'partner_id': partner_id
-        })
-        data.setdefault('files',{}).update({
-            'source_dir': _path.join(self.handin_directory, self.submission_name, id)
+            'partner_id': partner_id,
+            'source_dir': _path.join(self.handin_directory, self.submission_name, id),
         })
 
     def get_ids(self):
