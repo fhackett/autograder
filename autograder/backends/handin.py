@@ -35,9 +35,9 @@ class HandinBackend(_autograder.Backend):
         partner_filename = _path.join(self.handin_directory, self.submission_name+'.partner', id)
         if _path.isfile(partner_filename):
             with open(partner_filename) as f:
-                partner_id = f.read().strip()
+                partner_ids = set(p.strip() for p in f)
         else:
-            partner_id = None
+            partner_ids = set()
 
         # copy over files
         for f in _os.listdir(prefix):
@@ -52,7 +52,7 @@ class HandinBackend(_autograder.Backend):
             'submitter_id': id,
             'is_late': is_late,
             'submission_timestamp': submission_timestamp,
-            'partner_id': partner_id,
+            'partner_id': next(iter(partner_ids), None),
             'source_dir': _path.join(self.handin_directory, self.submission_name, id),
         })
 
