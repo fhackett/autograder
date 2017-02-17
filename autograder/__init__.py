@@ -67,7 +67,7 @@ class _TerminalReporter(Reporter):
         _sys.stdout.write(name+': ')
         _sys.stdout.write(t.italic(data['operation']))
         _sys.stdout.write('\n')
-        _sys.stdout.write(data['output'])
+        _sys.stdout.write(data.get('output', ''))
         _sys.stdout.write('\n')
     def on_individual_completion(self, id, success, data, global_data):
         t = self.terminal

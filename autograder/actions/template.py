@@ -16,4 +16,8 @@ class WriteTemplate(_autograder.Action):
         result = _pystache.render(self.template, _remove_dots(data))
         with open(_path.join(work_dir, self.filename), 'w') as f:
             f.write(result)
+        data['write_template_{}'.format(self.filename)] = {
+            'success': True,
+            'operation': 'render template to {}'.format(self.filename),
+        }
         return True
