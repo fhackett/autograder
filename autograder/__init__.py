@@ -71,16 +71,19 @@ class _TerminalReporter(Reporter):
         _sys.stdout.write('\n')
     def on_individual_completion(self, id, success, data, global_data):
         t = self.terminal
+        traceback = data.get(
+            'traceback',
+            '\n'.join('    {operation} failed. {output}'.format(**d) for d in data.values() if isinstance(d, dict) and 'success' in d and not d['success']))
         if success:
             c = lambda s: t.green(t.underline(s))
         else:
-            self.failed_ids.append((id, data['traceback']))
+            self.failed_ids.append((id, traceback))
             c = lambda s: t.red(t.underline(s))
         _sys.stdout.write(c('Finished {}: {}\n'.format(
             id,
             'success' if success else 'failure')))
         if not success:
-            _sys.stdout.write(data['traceback']+'\n')
+            _sys.stdout.write(traceback+'\n')
     def on_completion(self, data):
         _sys.stdout.write(self.terminal.red('Failed IDs:\n'))
         for id, trace in self.failed_ids:

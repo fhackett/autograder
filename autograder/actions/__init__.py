@@ -2,6 +2,7 @@ import autograder as _autograder
 import shutil as _shutil
 import os.path as _path
 import json as _json
+import traceback as _traceback
 
 
 def find_command(*args, path=None):
@@ -42,6 +43,8 @@ class Subprocess(_autograder.Action):
             result['output'] = 'File not found: {}'.format(command[0])
         except subprocess.TimeoutExpired:
             result['output'] = 'Timed out after: {}'.format(self.timeout)
+        except Exception:
+            result['output'] = _traceback.format_exc()
         return False
 
 class Make(_autograder.Action):
@@ -87,8 +90,8 @@ class ReadJSON(_autograder.Action):
                 results['output'] = str(js)
                 data['read_'+self.filename] = results
                 return True
-        except Exception as ex:
-            results['output'] = repr(ex)
+        except Exception:
+            results['output'] = _traceback.format_exc()
             data['read_'+self.filename] = results
             return False
 
@@ -109,7 +112,7 @@ class CalculateGrade(_autograder.Action):
             results['output'] = str(o)
             data['calculate_grade_{}'.format(self.name)] = results
             return True
-        except Exception as ex:
-            results['output'] = repr(ex)
+        except Exception:
+            results['output'] = _traceback.format_exc()
             data['calculate_grade_{}'.format(self.name)] = results
             return False
