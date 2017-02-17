@@ -1,6 +1,7 @@
 import csv as _csv
 import argparse as _argparse
 import autograder as _autograder
+import inspect as _inspect
 
 class CSVReporter(_autograder.Reporter):
     def __init__(self, name, row_fn, headings=None, **kwargs):
@@ -22,6 +23,10 @@ class CSVReporter(_autograder.Reporter):
     def on_individual_completion(self, id, success, data, global_data):
         row = self.row_fn(id, success, data, global_data)
         if row is not None:
-            self.writer.writerow(row)
+            if _inspect.isgenerator(row):
+                for r in row:
+                    self.writer.writerow(r)
+            else:
+                self.writer.writerow(row)
     def on_completion(self, data):
         self.file.close()

@@ -60,7 +60,7 @@ def test__session_run_invididual(OrderedDict, TemporaryDirectory, reporter, back
     ]
     assert reporter.on_part_completion.call_args_list == [mock.call(mock.sentinel.name, mock.sentinel.data)]*2
     assert reporter.on_individual_completion.call_args_list == [
-        mock.call(mock.sentinel.id, False, data, global_data),
+        mock.call(mock.sentinel.id, data['success'], data, global_data),
     ]
     assert action1.perform.call_args_list == [mock.call(data, work_dir)]
     assert action2.perform.call_args_list == [mock.call(data, work_dir)]
@@ -71,10 +71,10 @@ def test__session_run(run_individual, TemporaryDirectory, backend, reporter):
     work_dir = TemporaryDirectory().__enter__.return_value
     session = autograder.Session([backend], [reporter], [])
 
-    assert session.run() == {
+    assert session.run() == {'submissions': {
         mock.sentinel.id1: run_individual.return_value,
         mock.sentinel.id2: run_individual.return_value,
-    }
+    }}
 
     assert backend.prepare_global.call_args_list == [
         mock.call(mock.ANY, work_dir),
