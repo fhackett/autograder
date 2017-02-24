@@ -130,7 +130,7 @@ class WriteJSON(_autograder.Action):
         }
         try:
             with open(_path.join(work_dir, self.filename), 'w') as f:
-                _json.dump(f, data[self.filename])
+                _json.dump(data[self.filename], f)
                 results['success'] = True
                 results['output'] = str(data[self.filename])
                 data['write_'+self.filename] = results
