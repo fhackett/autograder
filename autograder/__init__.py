@@ -58,6 +58,7 @@ class _TerminalReporter(Reporter):
             self.terminal
         self.terminal = _blessings.Terminal()
         self.failed_ids = []
+        self.ids = []
     def on_part_completion(self, name, data):
         t = self.terminal
         if data['success']:
@@ -74,6 +75,7 @@ class _TerminalReporter(Reporter):
         traceback = data.get(
             'traceback',
             '\n'.join('    {operation} failed. {output}'.format(**d) for d in data.values() if isinstance(d, dict) and 'success' in d and not d['success']))
+        self.ids.append(id)
         if success:
             c = lambda s: t.green(t.underline(s))
         else:
@@ -85,9 +87,13 @@ class _TerminalReporter(Reporter):
         if not success:
             _sys.stdout.write(traceback+'\n')
     def on_completion(self, data):
-        _sys.stdout.write(self.terminal.red('Failed IDs:\n'))
-        for id, trace in self.failed_ids:
-            _sys.stdout.write('- '+id+'\n'+trace+'\n')
+        if len(self.failed_ids) > 0:
+            _sys.stdout.write(self.terminal.red('Failed IDs:\n'))
+            for id, trace in self.failed_ids:
+                _sys.stdout.write('- '+id+'\n'+trace+'\n')
+        _sys.stdout.write(self.terminal.green('Succeeded: {}/{}'.format(
+            len(self.failed_ids),
+            len(self.ids))))
 
 
 class ActionSequence(Action):
