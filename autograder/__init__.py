@@ -147,18 +147,21 @@ class Session:
             data = {}
             for backend in self.backends:
                 backend.prepare_global(data, global_dir)
-            with _futures.ThreadPoolExecutor(max_workers=_multiprocessing.cpu_count()*4) as executor:
-                submissions = {}
-                procs = {executor.submit(self.run_individual, id, data): id for id in self.get_ids()}
-                for proc in _futures.as_completed(procs):
-                    id = procs[proc]
-                    try:
-                        res = proc.result()
-                    except Exception as exc:
-                        raise exc
-                    else:
-                        submissions[id] = res
-                data['submissions'] = submissions
+            #with _futures.ThreadPoolExecutor(max_workers=_multiprocessing.cpu_count()*4) as executor:
+            submissions = {}
+            #procs = {executor.submit(self.run_individual, id, data): id for id in self.get_ids()}
+            #    for proc in _futures.as_completed(procs):
+            #        id = procs[proc]
+            #        try:
+            #            res = proc.result()
+            #        except Exception as exc:
+            #            raise exc
+            #        else:
+            #            submissions[id] = res
+            for id in self.get_ids():
+                res = self.run_individual(id, data)
+                submissions[id] = res
+            data['submissions'] = submissions
             for reporter in self.reporters:
                 reporter.on_completion(data)
         return data
