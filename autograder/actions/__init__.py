@@ -160,3 +160,23 @@ class CalculateGrade(_autograder.Action):
             results['output'] = _traceback.format_exc()
             data['calculate_grade_{}'.format(self.name)] = results
             return False
+
+class Call(_autograder.Action):
+    def __init__(self, name, fn):
+        self.name = name
+        self.fn = fn
+    def perform(self, data, work_dir):
+        results = {
+            'success': False,
+            'operation': 'call {}'.format(self.name),
+        }
+        try:
+            self.fn(data)
+            results['success'] = True
+            results['output'] = ''
+            data['{}'.format(self.name)] = results
+            return True
+        except Exception:
+            results['output'] = _traceback.format_exc()
+            data['{}'.format(self.name)] = results
+            return False
