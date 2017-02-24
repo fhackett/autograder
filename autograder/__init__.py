@@ -91,9 +91,9 @@ class _TerminalReporter(Reporter):
             _sys.stdout.write(self.terminal.red('Failed IDs:\n'))
             for id, trace in self.failed_ids:
                 _sys.stdout.write('- '+id+'\n'+trace+'\n')
-        _sys.stdout.write(self.terminal.green('Succeeded: {}/{}'.format(
+        _sys.stdout.write('Failed: {}/{}\n'.format(
             len(self.failed_ids),
-            len(self.ids))))
+            len(self.ids)))
 
 
 class ActionSequence(Action):
