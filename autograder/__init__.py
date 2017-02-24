@@ -178,6 +178,8 @@ def setup_args(parser, backends):
     for backend in backends:
         reqs.update(backend.requirements)
     for name, h in reqs.items():
+        required = h.get('required', True)
+        h['required'] = required
         parser.add_argument('--'+name, **h)
 
 def main():

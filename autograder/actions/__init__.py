@@ -75,6 +75,28 @@ class LinkCXX(_autograder.Action):
     def perform(self, data, work_dir):
         return self._proc.perform(data, work_dir)
 
+class ReadFile(_autograder.Action):
+    def __init__(self, filename):
+        self.filename = filename
+    def perform(self, data, work_dir):
+        path = _path.join(work_dir, self.filename)
+        results = {
+            'success': False,
+            'operation': 'read {}'.format(path),
+        }
+        try:
+            with open(_path.join(work_dir, self.filename)) as f:
+                contents = f.read()
+                data[self.filename] = contents
+                results['success'] = True
+                results['output'] = contents
+                data['read_'+self.filename] = results
+                return True
+        except Exception:
+            results['output'] = _traceback.format_exc()
+            data['read_'+self.filename] = results
+            return False
+
 class ReadJSON(_autograder.Action):
     def __init__(self, filename):
         self.filename = filename
@@ -96,7 +118,6 @@ class ReadJSON(_autograder.Action):
             results['output'] = _traceback.format_exc()
             data['read_'+self.filename] = results
             return False
-
 
 class CalculateGrade(_autograder.Action):
     def __init__(self, name, fn):

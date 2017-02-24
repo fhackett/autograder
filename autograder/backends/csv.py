@@ -7,7 +7,7 @@ class CSVBackend(_autograder.Backend):
         self.name = name
         self.key = key
         self.requirements = {
-            '{}_csv_input'.format(name): {
+            '{}-csv-input'.format(name): {
                 'type': _argparse.FileType('r')
             }
         }
