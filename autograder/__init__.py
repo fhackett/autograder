@@ -236,9 +236,9 @@ def main():
 
     if input_file is not None:
         results = _json.load(input_file)
-        session.run_from_results(results)
+        session.run_from_results(results, except_ids=except_ids, only_ids=only_ids)
     else:
-        results = session.run()
+        results = session.run(except_ids=except_ids, only_ids=only_ids)
         _json.dump(results, output_file, indent=2, default=repr)
 
     # if reporting failed, note the swallowed exception:
