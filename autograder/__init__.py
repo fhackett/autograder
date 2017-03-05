@@ -148,14 +148,25 @@ class Session:
             self._run_reporters_individual_completion(id, data['success'], data, global_data)
         return data
 
-    def run(self):
+    def _make_ids_predicate(self, only_ids, except_ids):
+        c = lambda id: True
+        if only_ids is not None:
+            c1 = c
+            c = lambda id: c1(id) and id in only_ids
+        if except_ids is not None:
+            c2 = c
+            c = lambda id: c2(id) and id not in except_ids
+        return c
+
+    def run(self, only_ids=None, except_ids=None):
         with _tempfile.TemporaryDirectory() as global_dir:
             data = {}
             for backend in self.backends:
                 backend.prepare_global(data, global_dir)
             with _futures.ThreadPoolExecutor(max_workers=_multiprocessing.cpu_count()*4) as executor:
                 submissions = {}
-                procs = {executor.submit(self.run_individual, id, data): id for id in self.get_ids()}
+                c = self._make_ids_predicate(only_ids, except_ids)
+                procs = {executor.submit(self.run_individual, id, data): id for id in self.get_ids() if c(id)}
                 for proc in _futures.as_completed(procs):
                     id = procs[proc]
                     try:
@@ -169,8 +180,10 @@ class Session:
                 reporter.on_completion(data)
         return data
 
-    def run_from_results(self, results):
+    def run_from_results(self, results, except_ids=None, only_ids=None):
+        c = self._make_ids_predicate(only_ids, except_ids)
         for id, data in results['submissions'].items():
+            if not c(id): continue
             for name, d in data.items():
                 if isinstance(d, dict) and 'success' in d:
                     for reporter in self.reporters:
@@ -194,6 +207,8 @@ def main():
     first_parser.add_argument('--run-from', nargs='?', type=_argparse.FileType('r'), default=None, help='report the contents of this result file')
     first_parser.add_argument('--output', nargs='?', type=_argparse.FileType('w'), help='filename to output json', default=_sys.stdout)
     first_parser.add_argument('--only-terminal', action='store_true', help='disables all reporters, displaying output on the terminal only')
+    first_parser.add_argument('--except-ids', nargs='+', default=None)
+    first_parser.add_argument('--only-ids', nargs='+', default=None)
     args, rest = first_parser.parse_known_args()
     compiled_definitions = compile(args.gradefile.read(), 'input', 'exec')
     definitions = {}
@@ -201,6 +216,8 @@ def main():
     output_file = args.output
     input_file = args.run_from
     only_terminal = args.only_terminal
+    except_ids = args.except_ids
+    only_ids = args.only_ids
     parser = _argparse.ArgumentParser()
     if input_file is None:
         setup_args(parser, definitions['backends'])

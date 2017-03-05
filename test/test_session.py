@@ -80,3 +80,48 @@ def test__session_run(run_individual, TemporaryDirectory, backend, reporter):
         mock.call(mock.ANY, work_dir),
     ]
     assert reporter.on_completion.called
+
+@mock.patch('tempfile.TemporaryDirectory', autospec=True)
+@mock.patch('autograder.Session.run_individual', autospec=True)
+def test__session_run__only_ids(run_individual, TemporaryDirectory, backend, reporter):
+    work_dir = TemporaryDirectory().__enter__.return_value
+    session = autograder.Session([backend], [reporter], [])
+
+    assert session.run(only_ids={mock.sentinel.id1}) == {'submissions': {
+        mock.sentinel.id1: run_individual.return_value,
+    }}
+
+    assert backend.prepare_global.call_args_list == [
+        mock.call(mock.ANY, work_dir),
+    ]
+    assert reporter.on_completion.called
+
+@mock.patch('tempfile.TemporaryDirectory', autospec=True)
+@mock.patch('autograder.Session.run_individual', autospec=True)
+def test__session_run__except_ids(run_individual, TemporaryDirectory, backend, reporter):
+    work_dir = TemporaryDirectory().__enter__.return_value
+    session = autograder.Session([backend], [reporter], [])
+
+    assert session.run(except_ids={mock.sentinel.id1}) == {'submissions': {
+        mock.sentinel.id2: run_individual.return_value,
+    }}
+
+    assert backend.prepare_global.call_args_list == [
+        mock.call(mock.ANY, work_dir),
+    ]
+    assert reporter.on_completion.called
+
+@mock.patch('tempfile.TemporaryDirectory', autospec=True)
+@mock.patch('autograder.Session.run_individual', autospec=True)
+def test__session_run__only_ids__except_ids(run_individual, TemporaryDirectory, backend, reporter):
+    work_dir = TemporaryDirectory().__enter__.return_value
+    session = autograder.Session([backend], [reporter], [])
+
+    assert session.run(only_ids={mock.sentinel.id1, mock.sentinel.id2}, except_ids={mock.sentinel.id2}) == {'submissions': {
+        mock.sentinel.id1: run_individual.return_value,
+    }}
+
+    assert backend.prepare_global.call_args_list == [
+        mock.call(mock.ANY, work_dir),
+    ]
+    assert reporter.on_completion.called

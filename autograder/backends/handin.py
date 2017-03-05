@@ -7,7 +7,7 @@ import shutil as _shutil
 class HandinBackend(_autograder.Backend):
     name = 'handin'
     requirements = {
-        'handin_directory': {
+        'handin-directory': {
             "help": "This is the directory where the course's handin files go. Look in csbox and go to the right year/term.",
         },
     }

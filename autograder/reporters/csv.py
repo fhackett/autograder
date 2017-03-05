@@ -7,7 +7,7 @@ class CSVReporter(_autograder.Reporter):
     def __init__(self, name, row_fn, headings=None, **kwargs):
         self.name = name
         self.requirements = {
-            name+'_csv_output': {
+            name+'-csv-output': {
                 'type': _argparse.FileType('w')
             },
         }
