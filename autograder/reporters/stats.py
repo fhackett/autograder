@@ -4,7 +4,7 @@ import autograder as _autograder
 class StatsReporter(_autograder.Reporter):
     requirements = {}
 
-    class Operation(_abc.ABCMeta):
+    class Operation(metaclass=_abc.ABCMeta):
         def __init__(self, name):
             self.name = name
         @_abc.abstractmethod
