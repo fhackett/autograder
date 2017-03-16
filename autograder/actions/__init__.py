@@ -97,6 +97,28 @@ class ReadFile(_autograder.Action):
             data['read_'+self.filename] = results
             return False
 
+class WriteFile(_autograder.Action):
+    def __init__(self, filename, contents):
+        self.filename = filename
+        self.contents = contents
+    def perform(self, data, work_dir):
+        path = _path.join(work_dir, self.filename)
+        results = {
+            'success': False,
+            'operation': 'write {}'.format(path),
+        }
+        try:
+            with open(_path.join(work_dir, self.filename), 'w') as f:
+                f.write(self.contents)
+                results['success'] = True
+                results['output'] = self.contents
+                data['write_'+self.filename] = results
+                return True
+        except Exception:
+            results['output'] = _traceback.format_exc()
+            data['read_'+self.filename] = results
+            return False
+
 class ReadJSON(_autograder.Action):
     def __init__(self, filename):
         self.filename = filename
@@ -174,9 +196,18 @@ class Call(_autograder.Action):
             self.fn(data)
             results['success'] = True
             results['output'] = ''
-            data['{}'.format(self.name)] = results
+            data[self.name] = results
             return True
         except Exception:
             results['output'] = _traceback.format_exc()
-            data['{}'.format(self.name)] = results
+            data[self.name] = results
             return False
+
+class Try(_autograder.Action):
+    def __init__(self, actions):
+        self.actions
+    def perform(self, data, work_dir):
+        result = False
+        for action in self.actions:
+            result = result and action.perform(data, work_dir)
+        return result
