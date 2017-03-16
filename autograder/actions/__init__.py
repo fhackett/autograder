@@ -76,7 +76,7 @@ class LinkCXX(_autograder.Action):
         return self._proc.perform(data, work_dir)
 
 class Valgrind(_autograder.Action):
-    def __init__(self, options=[], command):
+    def __init__(self, command, options=[]):
         self.options = options
         self.command = command
     def perform(self, data, work_dir):
