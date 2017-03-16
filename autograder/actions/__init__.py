@@ -4,6 +4,7 @@ import os as _os
 import os.path as _path
 import json as _json
 import traceback as _traceback
+import subprocess as _subprocess
 
 from .meta import CopyToSourceDir
 from .template import WriteTemplate
@@ -30,9 +31,9 @@ class Subprocess(_autograder.Action):
         }
         data[self.name] = result
         try:
-            output = subprocess.check_output(
+            output = _subprocess.check_output(
                 command,
-                stderr=subprocess.STDOUT,
+                stderr=_subprocess.STDOUT,
                 universal_newlines=True,
                 cwd=work_dir,
                 timeout=self.timeout)
@@ -40,11 +41,11 @@ class Subprocess(_autograder.Action):
             result['output'] = output
             result['success'] = True
             return True
-        except subprocess.CalledProcessError as e:
+        except _subprocess.CalledProcessError as e:
             result['return_code'] = e.returnCode
         except FileNotFoundError:
             result['output'] = 'File not found: {}'.format(command[0])
-        except subprocess.TimeoutExpired:
+        except _subprocess.TimeoutExpired:
             result['output'] = 'Timed out after: {}'.format(self.timeout)
         except Exception:
             result['output'] = _traceback.format_exc()
