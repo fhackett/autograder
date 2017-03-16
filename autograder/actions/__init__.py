@@ -139,7 +139,7 @@ class CopyFile(_autograder.Action):
         }
         try:
             _shutil.copy2(
-                src=_path.join(os.getcwd(), self.filename),
+                src=_path.join(_os.getcwd(), self.filename),
                 dst=_path.join(work_dir, self.filename))
             data['copy_'+self.filename] = results
             data['output'] = ''
