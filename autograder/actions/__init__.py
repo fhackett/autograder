@@ -14,7 +14,7 @@ def find_command(*args, path=None):
         result = _shutil.which(arg, path=path)
         if result is not None:
             return result
-    raise RuntimeError('Couldn\'t find any of commands {}'.format(args))
+    raise LookupError(args)
 
 class Subprocess(_autograder.Action):
     def __init__(self, name, command, timeout=None):
