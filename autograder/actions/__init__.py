@@ -142,6 +142,7 @@ class CopyFile(_autograder.Action):
             _shutil.copy2(
                 src=_path.join(_os.getcwd(), self.filename),
                 dst=_path.join(work_dir, self.filename))
+            results['success'] = True
             data['copy_'+self.filename] = results
             return True
         except Exception:
