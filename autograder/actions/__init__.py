@@ -23,7 +23,7 @@ class Subprocess(_autograder.Action):
         self.timeout = timeout
     def perform(self, data, work_dir):
         result = {
-            'operation': ' '.join(command),
+            'operation': ' '.join(self.command),
             'output': '',
             'return_code': None,
             'success': False,
