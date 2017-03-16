@@ -43,6 +43,7 @@ class Subprocess(_autograder.Action):
             return True
         except _subprocess.CalledProcessError as e:
             result['return_code'] = e.returncode
+            result['output'] = e.output
         except FileNotFoundError:
             result['output'] = 'File not found: {}'.format(command[0])
         except _subprocess.TimeoutExpired:
