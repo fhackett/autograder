@@ -136,13 +136,13 @@ class CopyFile(_autograder.Action):
         results = {
             'success': False,
             'operation': 'copy {}'.format(self.filename),
+            'output': '',
         }
         try:
             _shutil.copy2(
                 src=_path.join(_os.getcwd(), self.filename),
                 dst=_path.join(work_dir, self.filename))
             data['copy_'+self.filename] = results
-            data['output'] = ''
             return True
         except Exception:
             results['output'] = _traceback.format_exc()
