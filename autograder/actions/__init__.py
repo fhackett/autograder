@@ -21,7 +21,7 @@ class Subprocess(_autograder.Action):
         self.command = command
         self.timeout = timeout
     def perform(self, data, work_dir):
-        command = find_command(self.command[0], path=work_dir) + self.command[1:]
+        command = [find_command(self.command[0], path=work_dir)] + self.command[1:]
         result = {
             'operation': ' '.join(command),
             'output': '',
