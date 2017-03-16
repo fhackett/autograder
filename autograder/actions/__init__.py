@@ -10,7 +10,7 @@ from .template import WriteTemplate
 
 def find_command(*args, path=None):
     for arg in args:
-        result = _shutil.which(arg, path)
+        result = _shutil.which(arg, path=path)
         if result is not None:
             return result
     raise RuntimeError('Couldn\'t find any of commands {}'.format(args))
