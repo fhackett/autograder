@@ -1,5 +1,6 @@
 import autograder as _autograder
 import shutil as _shutil
+import os as _os
 import os.path as _path
 import json as _json
 import traceback as _traceback
@@ -119,6 +120,26 @@ class WriteFile(_autograder.Action):
             data['read_'+self.filename] = results
             return False
 
+class CopyFile(_autograder.Action):
+    def __init__(self, filename):
+        self.filename = filename
+    def perform(self, data, work_dir):
+        results = {
+            'success': False,
+            'operation': 'copy {}'.format(self.filename),
+        }
+        try:
+            _shutil.copy2(
+                src=_path.join(os.getcwd(), self.filename),
+                dst=_path.join(work_dir, self.filename))
+            data['copy_'+self.filename] = results
+            data['output'] = ''
+            return True
+        except Exception:
+            results['output'] = _traceback.format_exc()
+            data['copy_'+self.filename] = results
+            return False
+
 class ReadJSON(_autograder.Action):
     def __init__(self, filename):
         self.filename = filename
@@ -207,7 +228,6 @@ class Try(_autograder.Action):
     def __init__(self, actions):
         self.actions
     def perform(self, data, work_dir):
-        result = False
         for action in self.actions:
-            result = result and action.perform(data, work_dir)
-        return result
+            action.perform(data, work_dir)
+        return True
