@@ -62,7 +62,7 @@ class CompileCXX(_autograder.Action):
     def __init__(self, filename):
         basename, _ = _path.splitext(filename)
         self._proc = Subprocess(
-            name='compilecxx_'+target,
+            name='compilecxx_'+basename,
             command=[find_command('g++', 'clang++')] + '-c -Wall -g --std=c++11'.split(' ') + [filename, '-o', basename+'.o'])
     def perform(self, data, work_dir):
         return self._proc.perform(data, work_dir)
@@ -70,7 +70,7 @@ class CompileCXX(_autograder.Action):
 class LinkCXX(_autograder.Action):
     def __init__(self, program, objects, libraries=[]):
         self._proc = Subprocess(
-            name='linkcxx_'+target,
+            name='linkcxx_'+program,
             command=[find_command('g++', 'clang++')] + '-Wall -g --std=c++11'.split(' ') + objects + ['-o', program])
     def perform(self, data, work_dir):
         return self._proc.perform(data, work_dir)
@@ -81,8 +81,8 @@ class Valgrind(_autograder.Action):
         self.command = command
     def perform(self, data, work_dir):
         proc = Subprocess(
-            name='valgrind_{}'.format(command[0]),
-            command=[find_command('valgrind')] + options + [find_command(command[0], path=work_dir)] + command[1:])
+            name='valgrind_{}'.format(self.command[0]),
+            command=[find_command('valgrind')] + self.options + [find_command(command[0], path=work_dir)] + self.command[1:])
         return proc.perform(data, work_dir)
 
 class ReadFile(_autograder.Action):
