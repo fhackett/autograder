@@ -235,7 +235,7 @@ class Call(_autograder.Action):
 
 class Try(_autograder.Action):
     def __init__(self, actions):
-        self.actions
+        self.actions = actions
     def perform(self, data, work_dir):
         for action in self.actions:
             action.perform(data, work_dir)
