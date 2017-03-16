@@ -89,6 +89,7 @@ class Valgrind(_autograder.Action):
             return proc.perform(data, work_dir)
         except NameError:
             data['valgrind_{}'.format(self.command[0])] = {
+                'operation': 'valgrind {}'.format(self.command),
                 'success': False,
                 'output': _traceback.format_exc(),
             }
