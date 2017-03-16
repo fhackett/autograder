@@ -82,10 +82,17 @@ class Valgrind(_autograder.Action):
         self.options = options
         self.command = command
     def perform(self, data, work_dir):
-        proc = Subprocess(
-            name='valgrind_{}'.format(self.command[0]),
-            command=[find_command('valgrind')] + self.options + [find_command(self.command[0], path=work_dir)] + self.command[1:])
-        return proc.perform(data, work_dir)
+        try:
+            proc = Subprocess(
+                name='valgrind_{}'.format(self.command[0]),
+                command=[find_command('valgrind')] + self.options + [find_command(self.command[0], path=work_dir)] + self.command[1:])
+            return proc.perform(data, work_dir)
+        except NameError:
+            data['valgrind_{}'.format(self.command[0])] = {
+                'success': False,
+                'output': _traceback.format_exc(),
+            }
+            return False
 
 class ReadFile(_autograder.Action):
     def __init__(self, filename):
