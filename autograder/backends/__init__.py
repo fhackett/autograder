@@ -4,6 +4,8 @@ from .csv import CSVBackend
 from autograder import Backend
 
 class CustomBackend(Backend):
+    requirements = {}
+    
     def __init__(self, fn):
         self.fn = fn
     def prepare_global(self, data, global_dir):
